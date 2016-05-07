@@ -1,0 +1,9 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+epulsa/*.pyc
+transaction/*.pyc
+transaction/migrations/*.pyc
+/order/*.pyc
+/order/migrations/*.pyc
+/users/*.pyc
+/users/migrations/*.pyc
