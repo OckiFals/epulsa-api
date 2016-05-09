@@ -1,12 +1,15 @@
+import json
+
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
+from django.http import HttpResponse
 
-from users.models import Customer
-from users.serializers import CustomerSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from users.models import Customer
+from users.serializers import CustomerSerializer
 
 
 class CustomerList(APIView):
@@ -25,8 +28,12 @@ class CustomerList(APIView):
     def post(request, format=None):
         serializer = CustomerSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            customer = serializer.save()
+            # customer.save()
+            return Response(
+                customer.data,
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -49,10 +56,11 @@ class CustomerDetail(APIView):
 
     def put(self, request, pk, format=None):
         customer = self.get_object(pk)
-        serializer = CustomerSerializer(customer, data=request.data, context={'request': request})
+        serializer = CustomerSerializer(customer, data=request.data, context={'request': request}, partial=True)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            customer = serializer.save()
+            customer.save()
+            return Response(data=serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
