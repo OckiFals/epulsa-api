@@ -10,9 +10,14 @@ PROVIDER = (
     (4, 'Three')
 )
 
+IS_ONLINE = (
+    (1, 'Online'),
+    (2, 'Offline')
+)
+
 
 class Customer(models.Model):
-    user = models.OneToOneField(User, unique=False)
+    user = models.OneToOneField(User, unique=True)
     phone = models.CharField(max_length=15)
     provider = models.IntegerField(choices=PROVIDER)
     saldo = models.IntegerField(default=0)
@@ -23,3 +28,19 @@ class Customer(models.Model):
 
     class Meta:
         ordering = ('user',)
+
+
+class Counter(models.Model):
+    user = models.OneToOneField(User, unique=True)
+    store_name = models.CharField(max_length=18)
+    phone = models.CharField(max_length=15)
+    address = models.TextField()
+    saldo = models.IntegerField(default=0)
+    income = models.IntegerField(default=0)
+    is_online = models.IntegerField(choices=IS_ONLINE)
+
+    def __unicode__(self):
+        return self.store_name
+
+    class Meta:
+        ordering = ('user', 'is_online')
