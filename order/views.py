@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -33,4 +34,31 @@ class OrderList(APIView):
                 OrderSerializer(order, context={'request': request}).data,
                 status=status.HTTP_201_CREATED
             )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderDetail(APIView):
+    """
+    Retrieve or update a Order instance.
+    """
+
+    @staticmethod
+    def get_object(pk):
+        try:
+            return Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        order = self.get_object(pk)
+        serializer = OrderSerializer(order, context={'request': request})
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        order = self.get_object(pk)
+        serializer = OrderSerializer(order, data=request.data, context={'request': request}, partial=True)
+        if serializer.is_valid():
+            order = serializer.save()
+            order.save()
+            return Response(data=serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
