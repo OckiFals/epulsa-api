@@ -41,7 +41,8 @@ class OrderDetail(APIView):
     """
     Retrieve or update a Order instance.
     """
-
+    authentication_classes = (JSONWebTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
     @staticmethod
     def get_object(pk):
         try:
