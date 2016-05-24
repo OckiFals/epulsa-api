@@ -38,6 +38,7 @@ class Counter(models.Model):
     saldo = models.IntegerField(default=0)
     income = models.IntegerField(default=0)
     is_online = models.IntegerField(choices=IS_ONLINE, default=2)
+    type = models.IntegerField(default=2)
 
     def __unicode__(self):
         return self.store_name
