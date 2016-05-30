@@ -20,7 +20,7 @@ class OrderList(APIView):
     @staticmethod
     def get(request, format=None):
         customer = Customer.objects.get(user=request.user)
-        orders = Order.objects.filter(customer=customer.id)
+        orders = Order.objects.filter(customer=customer.id, status=1)
         serializer = OrderSerializer(orders, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -43,15 +43,19 @@ class OrderDetail(APIView):
     """
     authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
+
     @staticmethod
-    def get_object(pk):
+    def get_object(request, pk):
         try:
-            return Order.objects.get(pk=pk)
+            order = Order.objects.get(pk=pk)
+            if request.user.id is not order.customer.user.id:
+                raise Http404
+            return order
         except Order.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
-        order = self.get_object(pk)
+        order = self.get_object(request, pk)
         serializer = OrderSerializer(order, context={'request': request})
         return Response(serializer.data)
 
