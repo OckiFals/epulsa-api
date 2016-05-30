@@ -7,7 +7,7 @@ from rest_framework import status
 
 from order.models import Order
 from order.serializer import OrderSerializer
-from users.models import Customer
+from users.models import Customer, Counter
 
 
 class OrderList(APIView):
@@ -67,3 +67,18 @@ class OrderDetail(APIView):
             order.save()
             return Response(data=serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderStream(APIView):
+    """
+    List order from customer for authenticated Counter.
+    """
+    authentication_classes = (JSONWebTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def get(request, format=None):
+        counter = Counter.objects.get(user=request.user)
+        orders = Order.objects.filter(counter=counter.id, status=1)
+        serializer = OrderSerializer(orders, many=True, context={'request': request})
+        return Response(serializer.data)
