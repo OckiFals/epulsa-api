@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from order.models import Order
-from users.models import Customer
+from users.models import Customer, Counter
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -19,13 +19,14 @@ class OrderSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     # url = serializers.HyperlinkedIdentityField(view_name='order-detail')
     customer = serializers.ReadOnlyField(source='customer.id')
+    counter = serializers.ReadOnlyField(source='counter.id')
     purchase = serializers.IntegerField()
     phone_number = serializers.CharField(min_length=11, max_length=15)
     status = serializers.IntegerField(default=1)
 
     class Meta:
         model = Order
-        fields = ('id', 'customer', 'purchase', 'phone_number', 'status', 'time')
+        fields = ('id', 'customer', 'counter', 'purchase', 'phone_number', 'status', 'time')
 
     def create(self, validated_data):
         customer_id = self.context['request'].user.customer.id
