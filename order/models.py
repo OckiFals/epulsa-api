@@ -23,3 +23,8 @@ class Order(models.Model):
 
     class Meta:
         ordering = ('time',)
+
+
+class OrderTurn(models.Model):
+    turn = models.IntegerField()
+    count = models.IntegerField()

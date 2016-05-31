@@ -19,6 +19,7 @@ from django.contrib import admin
 from rest_framework import routers
 from rest_framework_jwt import views as jwtviews
 from transaction import views
+from users.views import TokenCreator
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
@@ -29,5 +30,7 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^user/', include('users.urls')),
     url(r'^order/', include('order.urls')),
+    url(r'^transaction/', include('transaction.urls')),
     url(r'^api-auth/$', jwtviews.obtain_jwt_token),
+    url(r'^api-auth2/$', TokenCreator.as_view()),
 ]

@@ -121,7 +121,16 @@ class CustomerDetail(APIView):
 
     def put(self, request, pk, format=None):
         customer = self.get_object(pk)
-        serializer = CustomerSerializer(customer, data=request.data, context={'request': request}, partial=True)
+
+        if 'saldo' in request.POST:
+            saldo = customer.saldo + int(request.POST.get('saldo')) 
+            serializer = CustomerSerializer(
+                customer, data={'saldo': saldo, 'user': {}}, 
+                context={'request': request}, partial=True
+            )
+        else:
+            serializer = CustomerSerializer(customer, data=request.data, context={'request': request}, partial=True)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -138,8 +147,8 @@ class CounterList(APIView):
     """
     List all counter, or create a new counter.
     """
-    # authentication_classes = (JSONWebTokenAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @staticmethod
     def get(request, format=None):
@@ -245,7 +254,7 @@ class AdminDetail(APIView):
 
     def delete(self, request, pk, format=None):
         admin = self.get_object(pk)
-        #admin.delete()
+        admin.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

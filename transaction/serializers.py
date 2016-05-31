@@ -1,33 +1,35 @@
 from rest_framework import serializers
-from transaction.models import TransactionCounter
+from transaction.models import TransactionOrder
+from order.models import Order
 from users.models import Customer, Counter
 
 
-class TransactionCounterSerializer(serializers.ModelSerializer):
-	counter = serializers.IntegerField(read_only=True)
-	user2 = serializers.IntegerField()
-	type = serializers.IntegerField()
-	total = serializers.IntegerField()
+class TransactionOrderSerializer(serializers.ModelSerializer):
+    counter = serializers.IntegerField(read_only=True)
+    customer = serializers.IntegerField()
+    order = serializers.IntegerField()
+    total = serializers.IntegerField()
 
-	class Meta:
-		model = TransactionCounter
+    class Meta:
+        model = TransactionOrder
 
-	def create(self, validated_data):
-		counter_id = self.context['request'].user.counter.id
+    def create(self, validated_data):
+        counter_id = self.context['request'].user.counter.id
+        counter = Counter.objects.get(pk=counter_id)
+        customer = Customer.objects.get(
+            pk=self.validated_data.get('customer')
+        )
+        order = Order.objects.get(
+            pk=self.validated_data.get('order')
+        )
+        total = self.validated_data.get('total')
 
-		if 1 == self.validated_data.get('type'):
-			counter = Counter.objects.get(pk=counter_id)
-			customer = Customer.objects.get(
-				user_id=self.validated_data.get('user2')
-			)
+        customer.saldo = customer.saldo - total
+        counter.saldo = counter.saldo - total
+        counter.income = counter.income + total
+        order.status = 3
 
-			total = self.validated_data.get('total')
-
-			customer.saldo = customer.saldo - total
-			counter.saldo = counter.saldo - total
-			counter.income = counter.income + total
-
-			customer.save()
-			counter.save()
-
-		return TransactionCounter.objects.create(counter=counter_id, **validated_data)
+        customer.save()
+        counter.save()
+        order.save()
+        return TransactionOrder.objects.create(counter=counter_id, **validated_data)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from order.models import Order
+from order.models import Order, OrderTurn
 from users.models import Customer, Counter
 
 
@@ -30,8 +30,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         customer_id = self.context['request'].user.customer.id
+        counter = Counter.objects.filter(saldo__gte = validated_data.get('purchase'))
+        turn = OrderTurn.objects.get(pk=1).turn
         order = Order()
         order.customer = Customer.objects.get(pk=customer_id)
+        order.counter = counter[turn]
         order.purchase = validated_data.get('purchase')
         order.phone_number = validated_data.get('phone_number')
         return order

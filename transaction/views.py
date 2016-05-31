@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from epulsa.serializers import UserSerializer, GroupSerializer
-from transaction.models import TransactionCustomer, TransactionCounter
-from transaction.serializers import TransactionCounterSerializer
+from transaction.models import TransactionOrder, TransactionFunds
+from transaction.serializers import TransactionOrderSerializer
 from rest_framework import status
 
 
@@ -26,19 +26,23 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
 
 
-class TransactionListCounter(APIView):
+class TransactionListOrder(APIView):
     authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
     def get(request, format=None):
-        transaction = TransactionCounter.objects.filter(counter=request.user.counter.id)
-        serializer = TransactionCounterSerializer(transaction, many=True)
+        if 'type' in request.GET:
+            transaction = TransactionOrder.objects.filter(customer=request.user.customer.id)
+        else:
+            transaction = TransactionOrder.objects.filter(counter=request.user.counter.id)
+
+        serializer = TransactionOrderSerializer(transaction, many=True)
         return Response(serializer.data)
 
     @staticmethod
     def post(request, format=None):
-        serializer = TransactionCounterSerializer(data=request.data, context={'request': request})
+        serializer = TransactionOrderSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
