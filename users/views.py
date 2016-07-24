@@ -12,25 +12,38 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 import jwt
 
+"""
+Menggenerate token untuk credential yang valid
+digunakan pada view login client
+@route: /api/auth2/
+"""
+
 
 class TokenCreator(APIView):
     """
     Create token if user credentials was provided and valid.
     """
-    
+
+    # alamat ini hanya mendukung method POST
     def post(self, request, format=None):
+        # validasi form 
         form = LoginForm(request.POST)
+        # jika form valid
         if form.is_valid():
+            # dapatkan credential dari username dan password
             credential = self.get_account_type(form.user)
 
+            # kembalikan credential user beserta access token
             return Response({
                 'user': credential['serializer'].data,
                 'token': credential['token']
             })
+        # jika gagal, kembalikan error
         return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # memilah credential berdasatkan tipe akun
     def get_account_type(self, user):
-        if self.is_customer(user):
+        if self.is_customer(user):  # jika user adalah customer
             return {
                 'token': self.create_token(user),
                 'serializer': CustomerSerializer(user.customer),
@@ -78,11 +91,21 @@ class TokenCreator(APIView):
         return True
 
 
+"""
+Menampilkan list customer
+digunakan pada view account/customer-all.php
+@target: admin
+@route: /user/customer/
+"""
+
+
 class CustomerList(APIView):
     """
     List all customer, or create a new customer.
     """
 
+    # mendukung method get
+    # mendapatkan semua data customer
     @staticmethod
     def get(request, format=None):
         # customer = User.objects.filter(groups__name='customer')
@@ -90,16 +113,27 @@ class CustomerList(APIView):
         serializer = CustomerSerializer(customer, many=True, context={'request': request})
         return Response(serializer.data)
 
+    # method HTTP post untuk membuat customer baru
     @staticmethod
     def post(request, format=None):
+        # validasi form input menggunakan serializer
         serializer = CustomerSerializer(data=request.data, context={'request': request})
+        # jika serializer valid
         if serializer.is_valid():
+            # simpan data
             serializer.save()
             return Response(
-                serializer.data,
+                serializer.data,  # list customer dalam bentuk JSON
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+"""
+Menampilkan data customer spesifik
+@target: admin
+@route: /user/customer/[:id]
+"""
 
 
 class CustomerDetail(APIView):
@@ -107,6 +141,7 @@ class CustomerDetail(APIView):
     Retrieve, update or delete a Customer instance.
     """
 
+    # dapatkan customer berdasarkan primary key
     @staticmethod
     def get_object(pk):
         try:
@@ -114,36 +149,52 @@ class CustomerDetail(APIView):
         except Customer.DoesNotExist:
             raise Http404
 
+    # method GET
     def get(self, request, pk, format=None):
         customer = self.get_object(pk)
+        # ubah objek customer ke dalam format JSON
         serializer = CustomerSerializer(customer, context={'request': request})
-        return Response(serializer.data)
+        return Response(serializer.data)  # tampilkan data JSON
 
+    # method put
+    # memperbarui data customer
     def put(self, request, pk, format=None):
         customer = self.get_object(pk)
 
+        # jika yang diperbarui hanya saldo saja
         if 'saldo' in request.POST:
-            saldo = customer.saldo + int(request.POST.get('saldo')) 
+            saldo = customer.saldo + int(request.POST.get('saldo'))
             serializer = CustomerSerializer(
-                customer, data={'saldo': saldo, 'user': {}}, 
+                customer, data={'saldo': saldo, 'user': {}},
                 context={'request': request}, partial=True
             )
         else:
             serializer = CustomerSerializer(customer, data=request.data, context={'request': request}, partial=True)
 
+        # jika serializer valid
         if serializer.is_valid():
+            # perbarui data
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # method DELETE
+    # hapus customer dengan id tertentu
     def delete(self, request, pk, format=None):
         customer = self.get_object(pk)
         customer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CounterList(APIView):
+"""
+Menampilkan list counter
+digunakan pada view account/counter-all.php
+@target: admin
+@route: /user/counter/
+"""
 
+
+class CounterList(APIView):
     """
     List all counter, or create a new counter.
     """
@@ -169,7 +220,6 @@ class CounterList(APIView):
 
 
 class CounterDetail(APIView):
-
     @staticmethod
     def get_object(pk):
         try:
@@ -197,7 +247,6 @@ class CounterDetail(APIView):
 
 
 class AdminList(APIView):
-
     """
     List all admin, or create a new admin.
     """
@@ -223,7 +272,6 @@ class AdminList(APIView):
 
 
 class AdminDetail(APIView):
-
     @staticmethod
     def get_object(pk):
         try:
@@ -258,6 +306,7 @@ class AdminDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# uji coba aja
 class AuthTestView(APIView):
     authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)

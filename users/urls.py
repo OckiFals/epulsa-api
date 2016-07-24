@@ -2,8 +2,9 @@ from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
 from users import views
 
+# url pada module ini didaului oleh /user/
 urlpatterns = [
-    # customer
+    # customer -> link /user/customer
     url(r'^customer/$', views.CustomerList.as_view(), name="customer-all"),
     url(r'^customer/(?P<pk>[0-9]+)/$', views.CustomerDetail.as_view(), name="customer-detail"),
     # counter
