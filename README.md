@@ -1,5 +1,5 @@
-# crud-django
-Django CRUD sample applications
+# epulsa-api
+Full-stack API with JWT authentication
 
 What is Django?
 https://ockifals.wordpress.com/2014/12/31/pengenalan-django/
@@ -7,7 +7,6 @@ https://ockifals.wordpress.com/2014/12/31/pengenalan-django/
 How to (manual) install?
 https://ockifals.wordpress.com/2015/01/01/instalasi-django/
 
-### Required Django >= 1.9.2
 
 Instalation
 ---------------
